@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-aliyun2",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "n8n nodes for Aliyun services",
   "keywords": [
     "n8n-community-node-package"
@@ -8,12 +8,12 @@
   "license": "MIT",
   "homepage": "",
   "author": {
-    "name": "lfshao",
-    "email": "22172112+lfshao@users.noreply.github.com"
+    "name": "Brook",
+    "email": "uedsky@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/lfshao/n8n-nodes-aliyun.git"
+    "url": "https://github.com/yangg/n8n-nodes-aliyun.git"
   },
   "engines": {
     "node": ">=18.10",
