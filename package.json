@@ -1,6 +1,6 @@
 {
-  "name": "n8n-nodes-aliyun",
-  "version": "0.1.8",
+  "name": "n8n-nodes-aliyun2",
+  "version": "1.0.0",
   "description": "n8n nodes for Aliyun services",
   "keywords": [
     "n8n-community-node-package"
@@ -22,7 +22,6 @@
   "packageManager": "pnpm@9.1.4",
   "main": "index.js",
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
     "build": "tsc && gulp build:icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
