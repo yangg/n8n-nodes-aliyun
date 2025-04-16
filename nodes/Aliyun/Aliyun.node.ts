@@ -181,15 +181,11 @@ export class Aliyun implements INodeType {
 					const securityGroupId = this.getNodeParameter('securityGroupId', 0) as string;
 					if (operation === 'list-rules') {
 						const res = (await client.listSecurityGroupRules(securityGroupId))
-						const rules = res.body.permissions?.permission
-						if(rules?.length) {
-							for (const rule of rules) {
-								returnData.push( {
-									json: rule
-								})
+						returnData.push( {
+							json: {
+								rules: res.body.permissions?.permission,
 							}
-						}
-
+						})
 					} else if (operation === 'update-rule') {
 						const securityGroupRuleId = this.getNodeParameter('securityGroupRuleId', 0) as string;
 						const securityGroupRuleInfo = this.getNodeParameter('securityGroupRuleInfo', 0) as string;
