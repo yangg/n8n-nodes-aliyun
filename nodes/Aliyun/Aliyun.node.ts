@@ -6,7 +6,7 @@ import {
 	NodeOperationError,
 	NodeConnectionType,
 } from 'n8n-workflow';
-import AliyunHelper from "./aliyun.helper";
+import AliyunHelper from './aliyun.helper';
 
 export class Aliyun implements INodeType {
 	description: INodeTypeDescription = {
@@ -23,7 +23,6 @@ export class Aliyun implements INodeType {
 		inputs: [
 			{
 				type: NodeConnectionType.Main,
-				required: true,
 			},
 		],
 		outputs: [
@@ -52,10 +51,10 @@ export class Aliyun implements INodeType {
 						description: '云服务器 ECS',
 					},
 					{
-						name: "Security Groups",
+						name: 'Security Groups',
 						value: 'security-groups',
-						description: '安全组'
-					}
+						description: '安全组',
+					},
 					// 后续可以添加更多产品
 					// {
 					//   name: 'RDS',
@@ -94,6 +93,18 @@ export class Aliyun implements INodeType {
 				],
 				default: 'describeInstances',
 				required: true,
+			},
+			{
+				displayName: 'FilterInstances',
+				name: 'ecsDescribeInstancesFilters',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						resource: ['ecs'],
+						operation: ['describeInstances'],
+					},
+				},
 			},
 			// Security Groups
 			{
@@ -142,7 +153,7 @@ export class Aliyun implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['security-groups'],
-						operation: ['update-rule']
+						operation: ['update-rule'],
 					},
 				},
 			},
@@ -155,7 +166,7 @@ export class Aliyun implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['security-groups'],
-						operation: ['update-rule']
+						operation: ['update-rule'],
 					},
 				},
 			},
@@ -164,36 +175,57 @@ export class Aliyun implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
-		const returnData: INodeExecutionData[] = []
+		const returnData: INodeExecutionData[] = [];
 		// let item: INodeExecutionData;
 		const resource = this.getNodeParameter('resource', 0) as string;
 		const operation = this.getNodeParameter('operation', 0) as string;
 		const credentials = await this.getCredentials('aliyunApi');
 		const region = credentials.region as string;
-		const client = new AliyunHelper(credentials.accessKeyId as string, credentials.accessKeySecret as string, region)
-
+		const client = new AliyunHelper(
+			credentials.accessKeyId as string,
+			credentials.accessKeySecret as string,
+			region,
+		);
 
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 			// item = items[itemIndex];
 			try {
 				if (resource === 'ecs') {
+					switch (operation) {
+						case 'describeInstances':
+							const ecsDescribeInstancesFilters =
+								(this.getNodeParameter('ecsDescribeInstancesFilters', 0) as string) || '{}';
+							const res = await client.describeInstances(JSON.parse(ecsDescribeInstancesFilters));
+							returnData.push({
+								json: {
+									instances: res.body.instances?.instance,
+								},
+							});
+							break;
+					}
 				} else if (resource === 'security-groups') {
 					const securityGroupId = this.getNodeParameter('securityGroupId', 0) as string;
 					if (operation === 'list-rules') {
-						const res = (await client.listSecurityGroupRules(securityGroupId))
-						returnData.push( {
+						const res = await client.listSecurityGroupRules(securityGroupId);
+						returnData.push({
 							json: {
 								rules: res.body.permissions?.permission,
-							}
-						})
+							},
+						});
 					} else if (operation === 'update-rule') {
 						const securityGroupRuleId = this.getNodeParameter('securityGroupRuleId', 0) as string;
-						const securityGroupRuleInfo = this.getNodeParameter('securityGroupRuleInfo', 0) as string;
-						const res = await client.updateSecurityGroupRule(securityGroupId, securityGroupRuleId,
-							JSON.parse(securityGroupRuleInfo))
-						returnData.push( {
-							json: res.body
-						})
+						const securityGroupRuleInfo = this.getNodeParameter(
+							'securityGroupRuleInfo',
+							0,
+						) as string;
+						const res = await client.updateSecurityGroupRule(
+							securityGroupId,
+							securityGroupRuleId,
+							JSON.parse(securityGroupRuleInfo),
+						);
+						returnData.push({
+							json: res.body,
+						});
 					}
 				}
 				// 可以添加更多产品的处理逻辑
@@ -215,6 +247,6 @@ export class Aliyun implements INodeType {
 			}
 		}
 
-		return [returnData]
+		return [returnData];
 	}
 }
